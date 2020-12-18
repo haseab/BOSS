@@ -1,6 +1,6 @@
 class FabStrategy():
     def __init__(self):
-        self.size = 7
+        self.size1 = 7
         self.size2 = 77
         self.size3 = 231
         self.size4 = 22
@@ -13,75 +13,84 @@ class FabStrategy():
         self.df = df
 
     def create_objects(self):
-        df = self.df
-        self.price, self.low, self.high = df['Close'].values, df['Low'].values, df['High'].values
-        self.green, self.orange, self.black = self._sma(df, self.size).values, self._sma(df,
-                                                                                         self.size2).values, self._sma(
-            df, self.size3).values
-        self.cyan, self.red = self._sma(df, self.size4).values, self._sma(df, self.size5).values
+        self.price, self.low, self.high = self.df['Close'].values, self.df['Low'].values, self.df['High'].values
+        self.green, self.orange, self.black = self._sma(self.df, self.size1).values, self._sma(self.df,
+                                                                                               self.size2).values, self._sma(
+            self.df, self.size3).values
+        self.cyan, self.red = self._sma(self.df, self.size4).values, self._sma(self.df, self.size5).values
+
+    def update_objects(self, open_price, high_price, low_price, close_price):
+        self.price.append(close_price)
+        self.low.append(low_price)
+        self.high.append(high_price)
+        self.green.append(sum(np.append(self.green[-self.size1 + 1:].astype("float"), [close_price])) / self.size1)
+        self.orange.append(sum(np.append(self.orange[-self.size2 + 1:].astype("float"), [close_price])) / self.size2)
+        self.black.append(sum(np.append(self.black[-self.size3 + 1:].astype("float"), [close_price])) / self.size3)
 
     def rule_1_buy_enter(self, i):
-        if self.green[i] > self.black[i] and self.orange[i] > self.black[i] and self.green[i] <= self.orange[
-            i]:  # and self.black[i]>self.red[i]
-            if self.green[i + 1] > self.orange[i + 1]:
+        if self.green[i - 1] > self.black[i - 1] and self.orange[i - 1] > self.black[i - 1] and self.green[i - 1] <= \
+                self.orange[i - 1]:  # and self.black[i-1]>self.red[i-1]
+            if self.green[i] > self.orange[i]:
                 return True
         return False
 
     def rule_1_buy_exit(self, i):
-        if self.green[i] > self.black[i] and self.orange[i] > self.black[i] and self.green[i] >= self.orange[i]:
-            if self.green[i + 1] < self.orange[i + 1] or self.orange[i + 1] < self.black[i + 1]:
+        if self.green[i - 1] > self.black[i - 1] and self.orange[i - 1] > self.black[i - 1] and self.green[i - 1] >= \
+                self.orange[i - 1]:
+            if self.green[i] < self.orange[i] or self.orange[i] < self.black[i]:
                 return True
         return False
 
     def rule_1_short_enter(self, i):
-        if self.green[i] < self.black[i] and self.orange[i] < self.black[i] and self.green[i] >= self.orange[
-            i]:  # and self.black[i]>self.red[i]:
-            if self.green[i + 1] < self.orange[i + 1]:
+        if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] < self.black[i - 1] and self.green[i - 1] >= \
+                self.orange[i - 1]:  # and self.black[i-1]>self.red[i-1]:
+            if self.green[i] < self.orange[i]:
                 return True
         return False
 
     def rule_1_short_exit(self, i):
-        if self.green[i] < self.black[i] and self.orange[i] < self.black[i] and self.green[i] <= self.orange[i]:
-            if self.green[i + 1] > self.orange[i + 1] or self.orange[i + 1] > self.black[i + 1]:
+        if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] < self.black[i - 1] and self.green[i - 1] <= \
+                self.orange[i - 1]:
+            if self.green[i] > self.orange[i] or self.orange[i] > self.black[i]:
                 return True
         return False
 
     def rule_2_buy_enter(self, i):
-        if self.low[i] > self.black[i] and self.low[i - 1] > self.black[i - 1] and self.green[i] > self.black[i] and \
-                self.orange[i] <= self.black[i]:
-            if self.low[i + 1] <= self.black[i + 1] and ((self.orange[i] - self.orange[i - 3]) / 3) > (
-                    (self.black[i] - self.black[i - 3]) / 3):
+        if self.low[i - 1] > self.black[i - 1] and self.low[i - 2] > self.black[i - 2] and self.green[i - 1] > \
+                self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1]:
+            if self.low[i] <= self.black[i] and ((self.orange[i - 1] - self.orange[i - 4]) / 3) > (
+                    (self.black[i - 1] - self.black[i - 4]) / 3):
                 return True
         return False
 
     def rule_2_buy_stop(self, i):
-        if self.price[i] < self.black[i] and self.orange[i] <= self.black[i]:
-            if self.price[i + 1] <= self.orange[i + 1] or self.green[i + 1] < self.black[i + 1]:
+        if self.price[i - 1] < self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1]:
+            if self.price[i] <= self.orange[i] or self.green[i] < self.black[i]:
                 return True
         return False
 
     def rule_2_short_enter(self, i):
-        if self.high[i] < self.black[i] and self.high[i - 1] < self.black[i - 1] and self.green[i] < self.black[i] and \
-                self.orange[i] >= self.black[i]:
-            if self.high[i + 1] >= self.black[i + 1] and ((self.orange[i] - self.orange[i - 3]) / 3) < (
-                    (self.black[i] - self.black[i - 3]) / 3):
+        if self.high[i - 1] < self.black[i - 1] and self.high[i - 2] < self.black[i - 2] and self.green[i - 1] < \
+                self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1]:
+            if self.high[i] >= self.black[i] and ((self.orange[i - 1] - self.orange[i - 4]) / 3) < (
+                    (self.black[i - 1] - self.black[i - 4]) / 3):
                 return True
         return False
 
     def rule_2_short_stop(self, i):
-        if self.price[i] > self.black[i] and self.orange[i] >= self.black[i]:
-            if self.price[i + 1] >= self.orange[i + 1] or self.green[i + 1] > self.black[i + 1]:
+        if self.price[i - 1] > self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1]:
+            if self.price[i] >= self.orange[i] or self.green[i] > self.black[i]:
                 return True
         return False
 
     def rule_3_buy_enter(self, i):
-        if self.green[i] > self.black[i] and self.orange[i] <= self.black[i]:
-            if self.orange[i + 1] > self.black[i + 1] and self.green[i + 1] > self.orange[i + 1]:
+        if self.green[i - 1] > self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1]:
+            if self.orange[i] > self.black[i] and self.green[i] > self.orange[i]:
                 return True
         return False
 
     def rule_3_short_enter(self, i):
-        if self.green[i] < self.black[i] and self.orange[i] >= self.black[i]:
-            if self.orange[i + 1] < self.black[i + 1] and self.green[i + 1] < self.orange[i + 1]:
+        if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1]:
+            if self.orange[i] < self.black[i] and self.green[i] < self.orange[i]:
                 return True
         return False
