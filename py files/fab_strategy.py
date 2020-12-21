@@ -17,7 +17,8 @@ class FabStrategy():
         self.green, self.orange, self.black = self._sma(self.df, self.size1).values, self._sma(self.df,
                                                                                                self.size2).values, self._sma(
             self.df, self.size3).values
-        self.cyan, self.red = self._sma(self.df, self.size4).values, self._sma(self.df, self.size5).values
+
+    #         self.cyan, self.red = self._sma(self.df,self.size4).values, self._sma(self.df,self.size5).values
 
     def update_objects(self, open_price, high_price, low_price, close_price):
         self.price.append(close_price)
@@ -31,7 +32,7 @@ class FabStrategy():
         if self.green[i - 1] > self.black[i - 1] and self.orange[i - 1] > self.black[i - 1] and self.green[i - 1] <= \
                 self.orange[i - 1]:  # and self.black[i-1]>self.red[i-1]
             if self.green[i] > self.orange[i]:
-                print("Rule 1 Buy Enter")
+                print(str(datetime.now())[:19], "Rule 1 Buy Enter")
                 return True
         return False
 
@@ -39,7 +40,7 @@ class FabStrategy():
         if self.green[i - 1] > self.black[i - 1] and self.orange[i - 1] > self.black[i - 1] and self.green[i - 1] >= \
                 self.orange[i - 1]:
             if self.green[i] < self.orange[i] or self.orange[i] < self.black[i]:
-                print("Rule 1 Buy Exit")
+                print(str(datetime.now())[:19], "Rule 1 Buy Exit")
                 return True
         return False
 
@@ -47,7 +48,7 @@ class FabStrategy():
         if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] < self.black[i - 1] and self.green[i - 1] >= \
                 self.orange[i - 1]:  # and self.black[i-1]>self.red[i-1]:
             if self.green[i] < self.orange[i]:
-                print("Rule 1 Short Enter")
+                print(str(datetime.now())[:19], "Rule 1 Short Enter")
                 return True
         return False
 
@@ -55,16 +56,16 @@ class FabStrategy():
         if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] < self.black[i - 1] and self.green[i - 1] <= \
                 self.orange[i - 1]:
             if self.green[i] > self.orange[i] or self.orange[i] > self.black[i]:
-                print("Rule 1 Short Exit")
+                print(str(datetime.now())[:19], "Rule 1 Short Exit")
                 return True
         return False
 
     def rule_2_buy_enter(self, i, sensitivity):
         if self.low[i - 1] > self.black[i - 1] and self.low[i - 2] > self.black[i - 2] and self.green[i - 1] > \
-                self.black[i - 1]:  # and self.orange[i-1]<=self.black[i-1]:
+                self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1]:
             if self.low[i] <= (self.black[i] * (1 + sensitivity)) and (
                     (self.orange[i - 1] - self.orange[i - 4]) / 3) > ((self.black[i - 1] - self.black[i - 4]) / 3):
-                print("Rule 2 Buy Enter")
+                print(str(datetime.now())[:19], "Rule 2 Buy Enter")
                 return True
         return False
 
@@ -72,16 +73,16 @@ class FabStrategy():
         if self.price[i - 1] < self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1] and self.green[i - 1] > \
                 self.black[i - 1]:
             if self.green[i] < self.black[i]:
-                print("Rule 2 Buy Stop")
+                print(str(datetime.now())[:19], "Rule 2 Buy Stop")
                 return True
         return False
 
     def rule_2_short_enter(self, i, sensitivity):
         if self.high[i - 1] < self.black[i - 1] and self.high[i - 2] < self.black[i - 2] and self.green[i - 1] < \
-                self.black[i - 1]:  # and self.orange[i-1]>=self.black[i-1]:
+                self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1]:
             if self.high[i] >= (self.black[i] / (1 + sensitivity)) and (
                     (self.orange[i - 1] - self.orange[i - 4]) / 3) < ((self.black[i - 1] - self.black[i - 4]) / 3):
-                print("Rule 2 Short Enter")
+                print(str(datetime.now())[:19], "Rule 2 Short Enter")
                 return True
         return False
 
@@ -89,20 +90,20 @@ class FabStrategy():
         if self.price[i - 1] > self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1] and self.green[i - 1] < \
                 self.black[i - 1]:
             if self.green[i] > self.black[i]:
-                print("Rule 2 Short Stop")
+                print(str(datetime.now())[:19], "Rule 2 Short Stop")
                 return True
         return False
 
     def rule_3_buy_enter(self, i):
         if self.green[i - 1] > self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1]:
             if self.orange[i] > self.black[i] and self.green[i] > self.orange[i]:
-                print("Rule 3 Buy Enter")
+                print(str(datetime.now())[:19], "Rule 3 Buy Enter")
                 return True
         return False
 
     def rule_3_short_enter(self, i):
         if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1]:
             if self.orange[i] < self.black[i] and self.green[i] < self.orange[i]:
-                print("Rule 3 Short Enter")
+                print(str(datetime.now())[:19], "Rule 3 Short Enter")
                 return True
         return False
