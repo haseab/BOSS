@@ -1,26 +1,84 @@
 class FabStrategy():
+    """
+    Responsible for all ETL related tasks. Loads data from csv, fetches data from Binance API.
+
+    Attributes
+    -----------
+    All attributes are moving average size. There are currently 5 different Moving average sizes that are
+    listed as attributes
+
+    price:  closing price of minute candle
+    green:  size1 moving average
+    orange: size2 moving average
+    black:  size3 moving average
+    cyan:   size4 moving average
+    red:    size5 moving average
+
+    Methods
+    ------------
+    load_data
+    create_objects
+    update_objects
+
+    rule_1_buy_enter
+    rule_1_buy_exit
+    rule_1_short_enter
+    rule_1_short_exit
+    rule_2_buy_enter
+    rule_2_buy_stop
+    rule_2_short_enter
+    rule_2_short_stop
+    rule_3_buy_enter
+    rule_3_short_enter
+
+    Please look at each method for descriptions
+    """
+
     def __init__(self):
+        """Initializing moving average sizes"""
         self.size1 = 7
         self.size2 = 77
         self.size3 = 231
         self.size4 = 22
         self.size5 = 721
 
-    def _sma(self, dataframe, size):
-        return round(dataframe['Close'].rolling(size).mean(), 2)
+    def _sma(self, series: pd.Series, size: int) -> pd.Series:
+        """
+        Simple moving average (MA)
 
-    def load_data(self, df):
+        Parameters
+        ------------
+        series: pd.Series object containing Close values of an asset.
+        size: the size of the moving average (how many points it should take the average of)
+
+        Returns pd.Series of moving average data, rounded to the nearest hundreth.
+        """
+        return round(series.rolling(size).mean(), 2)
+
+    def load_data(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Passes a dataframe object and adds it as an instance variable.
+        """
         self.df = df
 
-    def create_objects(self):
+    def create_objects(self) -> None:
+        """
+        Creates/updates all required moving averages (MA's) needed to run trading strategy successfully
+
+        Parameters: None
+        Returns: None
+        """
         self.price, self.low, self.high = self.df['Close'].values, self.df['Low'].values, self.df['High'].values
-        self.green, self.orange, self.black = self._sma(self.df, self.size1).values, self._sma(self.df,
-                                                                                               self.size2).values, self._sma(
-            self.df, self.size3).values
+        self.green, self.orange, self.black = self._sma(self.df["Close"], self.size1).values, self._sma(
+            self.df["Close"], self.size2).values, self._sma(self.df["Close"], self.size3).values
 
-    #         self.cyan, self.red = self._sma(self.df,self.size4).values, self._sma(self.df,self.size5).values
+    #         self.cyan, self.red = self._sma(self.df['Close'],self.size4).values, self._sma(self.df['Close'],self.size5).values
 
-    def update_objects(self, open_price, high_price, low_price, close_price):
+    def _update_objects(self, open_price: float, high_price: float, low_price: float, close_price: float) -> None:
+        """
+        WORK IN PROGRESS - Instead of creating new objects every time, the objects can be updated.
+        This is a little more complex and more prone to error.
+        """
         self.price.append(close_price)
         self.low.append(low_price)
         self.high.append(high_price)
@@ -28,7 +86,15 @@ class FabStrategy():
         self.orange.append(sum(np.append(self.orange[-self.size2 + 1:].astype("float"), [close_price])) / self.size2)
         self.black.append(sum(np.append(self.black[-self.size3 + 1:].astype("float"), [close_price])) / self.size3)
 
-    def rule_1_buy_enter(self, i):
+    def rule_1_buy_enter(self, i: int) -> bool:
+        """
+        In Plain English: If 7 MA (Green) just crosses above 77 MA (Orange) and both are > 231 MA (Black), BUY.
+
+        Parameters
+        -----------
+        i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
+
+        """
         if self.green[i - 1] > self.black[i - 1] and self.orange[i - 1] > self.black[i - 1] and self.green[i - 1] <= \
                 self.orange[i - 1]:  # and self.black[i-1]>self.red[i-1]
             if self.green[i] > self.orange[i]:
@@ -36,7 +102,15 @@ class FabStrategy():
                 return True
         return False
 
-    def rule_1_buy_exit(self, i):
+    def rule_1_buy_exit(self, i: int) -> bool:
+        """
+        In Plain English: If 7 MA (Green) just crosses below 77 MA (Orange) and both are > 231 MA (Black), CLOSE.
+
+        Parameters
+        -----------
+        i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
+
+        """
         if self.green[i - 1] > self.black[i - 1] and self.orange[i - 1] > self.black[i - 1] and self.green[i - 1] >= \
                 self.orange[i - 1]:
             if self.green[i] < self.orange[i] or self.orange[i] < self.black[i]:
@@ -44,7 +118,15 @@ class FabStrategy():
                 return True
         return False
 
-    def rule_1_short_enter(self, i):
+    def rule_1_short_enter(self, i: int) -> bool:
+        """
+        In Plain English: If 7 MA (Green) just crosses below 77 MA (Orange) and both are < 231 MA (Black), SHORT.
+
+        Parameters
+        -----------
+        i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
+
+        """
         if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] < self.black[i - 1] and self.green[i - 1] >= \
                 self.orange[i - 1]:  # and self.black[i-1]>self.red[i-1]:
             if self.green[i] < self.orange[i]:
@@ -52,7 +134,15 @@ class FabStrategy():
                 return True
         return False
 
-    def rule_1_short_exit(self, i):
+    def rule_1_short_exit(self, i: int) -> bool:
+        """
+        In Plain English: If 7 MA (Green) just crosses above 77 MA (Orange) and both are < 231 MA (Black), CLOSE.
+
+        Parameters
+        -----------
+        i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
+
+        """
         if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] < self.black[i - 1] and self.green[i - 1] <= \
                 self.orange[i - 1]:
             if self.green[i] > self.orange[i] or self.orange[i] > self.black[i]:
@@ -60,7 +150,16 @@ class FabStrategy():
                 return True
         return False
 
-    def rule_2_buy_enter(self, i, sensitivity):
+    def rule_2_buy_enter(self, i: int, sensitivity: int = 0) -> bool:
+        """
+        In Plain English: If Price passes above 231 MA (Black) and then comes back down to touch the 231 MA (Black), BUY.
+
+        Parameters
+        -----------
+        i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
+        sensitivity: how far from the moving average should you enter. The larger the value, the further and less sensitive.
+
+        """
         if self.low[i - 1] > self.black[i - 1] and self.low[i - 2] > self.black[i - 2] and self.green[i - 1] > \
                 self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1]:
             if self.low[i] <= (self.black[i] * (1 + sensitivity)) and (
@@ -69,7 +168,15 @@ class FabStrategy():
                 return True
         return False
 
-    def rule_2_buy_stop(self, i):
+    def rule_2_buy_stop(self, i: int) -> bool:
+        """
+        In Plain English: (After Rule 2 Buy), If 7 MA (Green) crosses below 231 MA (Black), CLOSE.
+
+        Parameters
+        -----------
+        i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
+
+        """
         if self.price[i - 1] < self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1] and self.green[i - 1] > \
                 self.black[i - 1]:
             if self.green[i] < self.black[i]:
@@ -77,7 +184,16 @@ class FabStrategy():
                 return True
         return False
 
-    def rule_2_short_enter(self, i, sensitivity):
+    def rule_2_short_enter(self, i: int, sensitivity: int = 0) -> bool:
+        """
+        In Plain English: If Price passes below 231 MA (Black) and then comes back up to touch the 231 MA (Black), SHORT.
+
+        Parameters
+        -----------
+        i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
+        sensitivity: how far from the moving average should you enter. The larger the value, the further and less sensitive.
+
+        """
         if self.high[i - 1] < self.black[i - 1] and self.high[i - 2] < self.black[i - 2] and self.green[i - 1] < \
                 self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1]:
             if self.high[i] >= (self.black[i] / (1 + sensitivity)) and (
@@ -86,7 +202,15 @@ class FabStrategy():
                 return True
         return False
 
-    def rule_2_short_stop(self, i):
+    def rule_2_short_stop(self, i: int) -> bool:
+        """
+        In Plain English: (After Rule 2 Short), If 7 MA (Green) crosses above 231 MA (Black), CLOSE.
+
+        Parameters
+        -----------
+        i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
+
+        """
         if self.price[i - 1] > self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1] and self.green[i - 1] < \
                 self.black[i - 1]:
             if self.green[i] > self.black[i]:
@@ -94,14 +218,30 @@ class FabStrategy():
                 return True
         return False
 
-    def rule_3_buy_enter(self, i):
+    def rule_3_buy_enter(self, i: int) -> bool:
+        """
+        In Plain English: If 77 MA > 231 MA (a.k.a. Orange > Black), BUY.
+
+        Parameters
+        -----------
+        i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
+
+        """
         if self.green[i - 1] > self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1]:
             if self.orange[i] > self.black[i] and self.green[i] > self.orange[i]:
                 print(str(datetime.now())[:19], "Rule 3 Buy Enter")
                 return True
         return False
 
-    def rule_3_short_enter(self, i):
+    def rule_3_short_enter(self, i: int) -> bool:
+        """
+        In Plain English: If 77 MA < 231 MA (a.k.a. Orange < Black), SHORT.
+
+        Parameters
+        -----------
+        i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
+
+        """
         if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1]:
             if self.orange[i] < self.black[i] and self.green[i] < self.orange[i]:
                 print(str(datetime.now())[:19], "Rule 3 Short Enter")
