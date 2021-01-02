@@ -1,4 +1,9 @@
-class FabStrategy():
+from datetime import datetime
+import pandas as pd
+import numpy as np
+
+
+class FabStrategy:
     """
     Responsible for all ETL related tasks. Loads data from csv, fetches data from Binance API.
 
@@ -11,8 +16,6 @@ class FabStrategy():
     green:  size1 moving average
     orange: size2 moving average
     black:  size3 moving average
-    cyan:   size4 moving average
-    red:    size5 moving average
 
     Methods
     ------------
