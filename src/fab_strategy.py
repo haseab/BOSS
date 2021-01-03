@@ -5,7 +5,7 @@ import numpy as np
 
 class FabStrategy:
     """
-    Responsible for all ETL related tasks. Loads data from csv, fetches data from Binance API.
+    This is a set of rules that specify to buy/sell/short/close whenever the market fulfills those conditions.
 
     Attributes
     -----------
@@ -57,7 +57,7 @@ class FabStrategy:
         series: pd.Series object containing Close values of an asset.
         size: the size of the moving average (how many points it should take the average of)
 
-        Ex. _sma(pd.Series([2,3,5,6,8,10]), 3) -> [NaN, 2.5, 4.0, 5.5, 7.0, 9.0]
+        Ex. _sma(pd.Series([2,3,5,6,8,10]), 2) -> [NaN, 2.5, 4.0, 5.5, 7.0, 9.0]
         Ex.  _sma(pd.Series([2,3,5,6,8,10]), 6) -> [NaN, NaN, NaN, NaN, NaN, 5.67]
 
         Returns pd.Series of moving average data, rounded to the nearest hundreth.
