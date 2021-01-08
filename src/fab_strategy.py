@@ -10,7 +10,11 @@ class FabStrategy:
     Attributes
     -----------
     All attributes are moving average size. There are currently 5 different Moving average sizes that are
-    listed as attributes
+    listed as attributes.
+
+
+    NOTE: The reason why the moving averages are colors is to avoid hardcoding the MA. Also it is used to distinguish
+    between different MA's on a graph
 
     price:  closing price of minute candle
     green:  size1 moving average
