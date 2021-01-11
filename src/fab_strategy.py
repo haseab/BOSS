@@ -50,7 +50,7 @@ class FabStrategy:
         self.size3 = 231
         self.size4 = 22
         self.size5 = 721
-        self.debug = False
+        self.debug = True
 
     def _sma(self, series: pd.Series, size: int) -> pd.Series:
         """
