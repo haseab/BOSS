@@ -20,7 +20,7 @@ class FabStrategy:
     green:  size1 moving average
     orange: size2 moving average
     black:  size3 moving average
-    cyan:   size4 moving average
+    blue:   size4 moving average
     red:    size5 moving average
 
     Methods
@@ -48,7 +48,7 @@ class FabStrategy:
         self.size1 = 7
         self.size2 = 77
         self.size3 = 231
-        self.size4 = 22
+        self.size4 = 200
         self.size5 = 721
         self.debug = debug
 
@@ -85,7 +85,7 @@ class FabStrategy:
         self.green, self.orange, self.black = self._sma(self.df["Close"], self.size1).values, self._sma(
             self.df["Close"], self.size2).values, self._sma(self.df["Close"], self.size3).values
 
-        self.cyan, self.red = self._sma(self.df['Close'],self.size4).values, self._sma(self.df['Close'],self.size5).values
+        self.blue, self.red = self._sma(self.df['Close'],self.size4).values, self._sma(self.df['Close'],self.size5).values
 
     def _update_objects(self, open_price: float, high_price: float, low_price: float, close_price: float) -> None:
         """
@@ -108,7 +108,7 @@ class FabStrategy:
         i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
 
         """
-        if self.green[i - 1] > self.black[i - 1] and self.orange[i - 1] > self.black[i - 1] and self.green[i - 1] <= \
+        if self.green[i - 1] > self.blue[i - 1] and self.orange[i - 1] > self.blue[i - 1] and self.green[i - 1] <= \
                 self.orange[i - 1]:  # and self.black[i-1]>self.red[i-1]
             if self.green[i] > self.orange[i]:
                 if self.debug == True:
