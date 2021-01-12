@@ -43,14 +43,14 @@ class FabStrategy:
     Please look at each method for descriptions
     """
 
-    def __init__(self):
+    def __init__(self, debug=False):
         """Initializing moving average sizes"""
         self.size1 = 7
         self.size2 = 77
         self.size3 = 231
         self.size4 = 22
         self.size5 = 721
-        self.debug = True
+        self.debug = debug
 
     def _sma(self, series: pd.Series, size: int) -> pd.Series:
         """
@@ -85,7 +85,7 @@ class FabStrategy:
         self.green, self.orange, self.black = self._sma(self.df["Close"], self.size1).values, self._sma(
             self.df["Close"], self.size2).values, self._sma(self.df["Close"], self.size3).values
 
-    #         self.cyan, self.red = self._sma(self.df['Close'],self.size4).values, self._sma(self.df['Close'],self.size5).values
+        self.cyan, self.red = self._sma(self.df['Close'],self.size4).values, self._sma(self.df['Close'],self.size5).values
 
     def _update_objects(self, open_price: float, high_price: float, low_price: float, close_price: float) -> None:
         """
@@ -112,7 +112,7 @@ class FabStrategy:
                 self.orange[i - 1]:  # and self.black[i-1]>self.red[i-1]
             if self.green[i] > self.orange[i]:
                 if self.debug == True:
-                    print(str(datetime.now())[:19], "Rule 1 Buy Enter")
+                    print(str(datetime.now())[:19], self.price[i], "Rule 1 Buy Enter")
                 return True
         return False
 
@@ -129,7 +129,7 @@ class FabStrategy:
                 self.orange[i - 1]:
             if self.green[i] < self.orange[i] or self.orange[i] < self.black[i]:
                 if self.debug == True:
-                    print(str(datetime.now())[:19], "Rule 1 Buy Exit")
+                    print(str(datetime.now())[:19], self.price[i], "Rule 1 Buy Exit")
                 return True
         return False
 
@@ -146,7 +146,7 @@ class FabStrategy:
                 self.orange[i - 1]:  # and self.black[i-1]>self.red[i-1]:
             if self.green[i] < self.orange[i]:
                 if self.debug == True:
-                    print(str(datetime.now())[:19], "Rule 1 Short Enter")
+                    print(str(datetime.now())[:19], self.price[i], "Rule 1 Short Enter")
                 return True
         return False
 
@@ -163,7 +163,7 @@ class FabStrategy:
                 self.orange[i - 1]:
             if self.green[i] > self.orange[i] or self.orange[i] > self.black[i]:
                 if self.debug == True:
-                    print(str(datetime.now())[:19], "Rule 1 Short Exit")
+                    print(str(datetime.now())[:19], self.price[i], "Rule 1 Short Exit")
                 return True
         return False
 
@@ -182,7 +182,7 @@ class FabStrategy:
             if self.low[i] <= (self.black[i] * (1 + sensitivity)) and (
                     (self.orange[i - 1] - self.orange[i - 4]) / 3) > ((self.black[i - 1] - self.black[i - 4]) / 3):
                 if self.debug == True:
-                    print(str(datetime.now())[:19], "Rule 2 Buy Enter")
+                    print(str(datetime.now())[:19], self.price[i], "Rule 2 Buy Enter")
                 return True
         return False
 
@@ -195,11 +195,11 @@ class FabStrategy:
         i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
 
         """
-        if self.price[i - 1] < self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1] and self.green[i - 1] > \
+        if self.low[i - 1] < self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1] and self.green[i - 1] > \
                 self.black[i - 1]:
             if self.green[i] < self.black[i]:
                 if self.debug == True:
-                    print(str(datetime.now())[:19], "Rule 2 Buy Stop")
+                    print(str(datetime.now())[:19], self.price[i], "Rule 2 Buy Stop")
                 return True
         return False
 
@@ -218,7 +218,7 @@ class FabStrategy:
             if self.high[i] >= (self.black[i] / (1 + sensitivity)) and (
                     (self.orange[i - 1] - self.orange[i - 4]) / 3) < ((self.black[i - 1] - self.black[i - 4]) / 3):
                 if self.debug == True:
-                    print(str(datetime.now())[:19], "Rule 2 Short Enter")
+                    print(str(datetime.now())[:19], self.price[i], "Rule 2 Short Enter")
                 return True
         return False
 
@@ -231,11 +231,11 @@ class FabStrategy:
         i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
 
         """
-        if self.price[i - 1] > self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1] and self.green[i - 1] < \
+        if self.high[i - 1] > self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1] and self.green[i - 1] < \
                 self.black[i - 1]:
             if self.green[i] > self.black[i]:
                 if self.debug == True:
-                    print(str(datetime.now())[:19], "Rule 2 Short Stop")
+                    print(str(datetime.now())[:19], self.price[i], "Rule 2 Short Stop")
                 return True
         return False
 
@@ -251,7 +251,7 @@ class FabStrategy:
         if self.green[i - 1] > self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1]:
             if self.orange[i] > self.black[i] and self.green[i] > self.orange[i]:
                 if self.debug == True:
-                    print(str(datetime.now())[:19], "Rule 3 Buy Enter")
+                    print(str(datetime.now())[:19], self.price[i], "Rule 3 Buy Enter")
                 return True
         return False
 
@@ -267,6 +267,6 @@ class FabStrategy:
         if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1]:
             if self.orange[i] < self.black[i] and self.green[i] < self.orange[i]:
                 if self.debug == True:
-                    print(str(datetime.now())[:19], "Rule 3 Short Enter")
+                    print(str(datetime.now())[:19], self.price[i], "Rule 3 Short Enter")
                 return True
         return False
