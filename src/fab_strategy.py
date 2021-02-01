@@ -109,7 +109,7 @@ class FabStrategy:
 
         """
         if self.green[i - 1] > self.blue[i - 1] and self.orange[i - 1] > self.blue[i - 1] and self.green[i - 1] <= \
-                self.orange[i - 1]:  # and self.black[i-1]>self.red[i-1]
+                self.orange[i - 1] and self.price[i-1]>self.red[i-1]:
             if self.green[i] > self.orange[i]:
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 1 Buy Enter")
@@ -143,7 +143,7 @@ class FabStrategy:
 
         """
         if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] < self.black[i - 1] and self.green[i - 1] >= \
-                self.orange[i - 1]:  # and self.black[i-1]>self.red[i-1]:
+                self.orange[i - 1] and self.price[i-1]>self.red[i-1]:
             if self.green[i] < self.orange[i]:
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 1 Short Enter")
