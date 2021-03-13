@@ -26,7 +26,7 @@ class FabStrategy:
     Methods
     ------------
     load_data
-    create_objects
+    update_moving_averages
     update_objects
 
     rule_1_buy_enter
@@ -74,7 +74,7 @@ class FabStrategy:
         """
         self.df = df
 
-    def create_objects(self) -> None:
+    def update_moving_averages(self) -> None:
         """
         Creates/updates all required moving averages (MA's) needed to run trading strategy successfully
 
