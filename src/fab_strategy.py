@@ -167,7 +167,7 @@ class FabStrategy:
                 return True
         return False
 
-    def rule_2_buy_enter(self, i: int, sensitivity: int = 0) -> bool:
+    def rule_2_buy_enter(self, i: int, sensitivity: int = 0.001) -> bool:
         """
         In Plain English: If Price passes above 231 MA (Black) and then comes back down to touch the 231 MA (Black), BUY.
 
@@ -203,7 +203,7 @@ class FabStrategy:
                 return True
         return False
 
-    def rule_2_short_enter(self, i: int, sensitivity: int = 0) -> bool:
+    def rule_2_short_enter(self, i: int, sensitivity: int = 0.001) -> bool:
         """
         In Plain English: If Price passes below 231 MA (Black) and then comes back up to touch the 231 MA (Black), SHORT.
 
