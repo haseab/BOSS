@@ -81,11 +81,11 @@ class FabStrategy:
         Parameters: None
         :return None
         """
-        self.price, self.low, self.high = self.df['Close'].values, self.df['Low'].values, self.df['High'].values
-        self.green, self.orange, self.black = self._sma(self.df["Close"], self.size1).values, self._sma(
-            self.df["Close"], self.size2).values, self._sma(self.df["Close"], self.size3).values
+        self.price, self.low, self.high = self.df['close'].values, self.df['low'].values, self.df['high'].values
+        self.green, self.orange, self.black = self._sma(self.df["close"], self.size1).values, self._sma(
+            self.df["close"], self.size2).values, self._sma(self.df["close"], self.size3).values
 
-        self.blue, self.red = self._sma(self.df['Close'],self.size4).values, self._sma(self.df['Close'],self.size5).values
+        self.blue, self.red = self._sma(self.df['close'],self.size4).values, self._sma(self.df['close'],self.size5).values
 
     def _update_objects(self, open_price: float, high_price: float, low_price: float, close_price: float) -> None:
         """
