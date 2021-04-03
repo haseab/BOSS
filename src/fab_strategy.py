@@ -73,6 +73,7 @@ class FabStrategy:
         Passes a dataframe object and adds it as an instance variable.
         """
         self.df = df
+        return self.df
 
     def update_moving_averages(self) -> None:
         """
@@ -92,12 +93,13 @@ class FabStrategy:
         WORK IN PROGRESS - Instead of creating new objects every time, the objects can be updated.
         This is a little more complex and more prone to error.
         """
-        self.price.append(close_price)
-        self.low.append(low_price)
-        self.high.append(high_price)
-        self.green.append(sum(np.append(self.green[-self.size1 + 1:].astype("float"), [close_price])) / self.size1)
-        self.orange.append(sum(np.append(self.orange[-self.size2 + 1:].astype("float"), [close_price])) / self.size2)
-        self.black.append(sum(np.append(self.black[-self.size3 + 1:].astype("float"), [close_price])) / self.size3)
+        pass
+        # self.price.append(close_price)
+        # self.low.append(low_price)
+        # self.high.append(high_price)
+        # self.green.append(sum(np.append(self.green[-self.size1 + 1:].astype("float"), [close_price])) / self.size1)
+        # self.orange.append(sum(np.append(self.orange[-self.size2 + 1:].astype("float"), [close_price])) / self.size2)
+        # self.black.append(sum(np.append(self.black[-self.size3 + 1:].astype("float"), [close_price])) / self.size3)
 
     def rule_1_buy_enter(self, i: int) -> bool:
         """
@@ -177,6 +179,7 @@ class FabStrategy:
         sensitivity: how far from the moving average should you enter. The larger the value, the further and less sensitive.
 
         """
+
         if self.low[i - 1] > self.black[i - 1] and self.low[i - 2] > self.black[i - 2] and self.green[i - 1] > \
                 self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1]:
             if self.low[i] <= (self.black[i] * (1 + sensitivity)) and (
