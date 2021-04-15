@@ -51,6 +51,7 @@ class FabStrategy:
         self.size4 = 200
         self.size5 = 721
         self.debug = debug
+        self.deviation = 1.10
 
     def _sma(self, series: pd.Series, size: int) -> pd.Series:
         """
@@ -66,7 +67,7 @@ class FabStrategy:
 
         Returns pd.Series of moving average data, rounded to the nearest hundreth.
         """
-        return round(series.rolling(size).mean(), 2)
+        return series.rolling(size).mean()
 
     def load_data(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -111,8 +112,8 @@ class FabStrategy:
 
         """
         if self.green[i - 1] > self.blue[i - 1] and self.orange[i - 1] > self.blue[i - 1] and self.green[i - 1] <= \
-                self.orange[i - 1] and self.price[i-1]>self.red[i-1]:
-            if self.green[i] > self.orange[i]:
+                self.orange[i - 1]: # and self.price[i-1]>self.red[i-1]:
+            if self.green[i] > self.orange[i] and self.price[i]/self.orange[i] < (self.deviation):
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 1 Buy Enter")
                 return True
@@ -127,7 +128,7 @@ class FabStrategy:
         i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
 
         """
-        if self.green[i - 1] > self.black[i - 1] and self.orange[i - 1] > self.black[i - 1] and self.green[i - 1] >= \
+        if self.green[i - 1] > self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1] and self.green[i - 1] >= \
                 self.orange[i - 1]:
             if self.green[i] < self.orange[i] or self.orange[i] < self.black[i]:
                 if self.debug == True:
@@ -145,8 +146,8 @@ class FabStrategy:
 
         """
         if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] < self.black[i - 1] and self.green[i - 1] >= \
-                self.orange[i - 1] and self.price[i-1]>self.red[i-1]:
-            if self.green[i] < self.orange[i]:
+                self.orange[i - 1]: # and self.price[i-1]>self.red[i-1]:
+            if self.green[i] < self.orange[i] and self.orange[i]/self.price[i] < (self.deviation):
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 1 Short Enter")
                 return True
@@ -161,7 +162,7 @@ class FabStrategy:
         i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
 
         """
-        if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] < self.black[i - 1] and self.green[i - 1] <= \
+        if self.green[i - 1] <= self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1] and self.green[i - 1] <= \
                 self.orange[i - 1]:
             if self.green[i] > self.orange[i] or self.orange[i] > self.black[i]:
                 if self.debug == True:
@@ -180,8 +181,8 @@ class FabStrategy:
 
         """
 
-        if self.low[i - 1] > self.black[i - 1] and self.low[i - 2] > self.black[i - 2] and self.green[i - 1] > \
-                self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1]:
+        if self.low[i - 1] > self.black[i - 1] and self.low[i - 2] > self.black[i - 2] and self.green[i - 1] >= \
+                self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1] and self.blue[i-1] <= self.black[i-1]:
             if self.low[i] <= (self.black[i] * (1 + sensitivity)) and (
                     (self.orange[i - 1] - self.orange[i - 4]) / 3) > ((self.black[i - 1] - self.black[i - 4]) / 3):
                 if self.debug == True:
@@ -198,12 +199,16 @@ class FabStrategy:
         i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
 
         """
-        if self.low[i - 1] < self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1] and self.green[i - 1] > \
-                self.black[i - 1]:
-            if self.green[i] < self.black[i]:
+        if self.orange[i - 1] <= self.black[i - 1] and self.green[i - 1] >= self.black[i - 1]:
+            if self.green[i] < self.black[i] or self.green[i] < self.orange[i]:
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 2 Buy Stop")
                 return True
+        return False
+
+    def rule_2_buy_stop_absolute(self, i:int) -> bool:
+        if self.green[i] < self.black[i]:
+            return True
         return False
 
     def rule_2_short_enter(self, i: int, sensitivity: int = 0.001) -> bool:
@@ -217,7 +222,7 @@ class FabStrategy:
 
         """
         if self.high[i - 1] < self.black[i - 1] and self.high[i - 2] < self.black[i - 2] and self.green[i - 1] < \
-                self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1]:
+                self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1] and self.blue[i-1] > self.black[i-1]:
             if self.high[i] >= (self.black[i] / (1 + sensitivity)) and (
                     (self.orange[i - 1] - self.orange[i - 4]) / 3) < ((self.black[i - 1] - self.black[i - 4]) / 3):
                 if self.debug == True:
@@ -234,12 +239,16 @@ class FabStrategy:
         i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
 
         """
-        if self.high[i - 1] > self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1] and self.green[i - 1] < \
-                self.black[i - 1]:
-            if self.green[i] > self.black[i]:
+        if self.orange[i - 1] >= self.black[i - 1] and self.green[i - 1] <= self.black[i - 1]:
+            if self.green[i] > self.black[i] or self.green[i] > self.orange[i]:
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 2 Short Stop")
                 return True
+        return False
+
+    def rule_2_short_stop_absolute(self, i:int) -> bool:
+        if self.green[i] > self.black[i]:
+            return True
         return False
 
     def rule_3_buy_enter(self, i: int) -> bool:
@@ -252,7 +261,7 @@ class FabStrategy:
 
         """
         if self.green[i - 1] > self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1]:
-            if self.orange[i] > self.black[i] and self.green[i] > self.orange[i]:
+            if self.orange[i] > self.black[i] and self.green[i] > self.orange[i] and self.price[i]/self.orange[i] < (self.deviation):
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 3 Buy Enter")
                 return True
@@ -268,7 +277,7 @@ class FabStrategy:
 
         """
         if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1]:
-            if self.orange[i] < self.black[i] and self.green[i] < self.orange[i]:
+            if self.orange[i] < self.black[i] and self.green[i] < self.orange[i] and self.orange[i]/self.price[i] < (self.deviation):
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 3 Short Enter")
                 return True
