@@ -49,9 +49,11 @@ class FabStrategy:
         self.size2 = 77
         self.size3 = 231
         self.size4 = 200
-        self.size5 = 721
+        self.size5 = 100
+        self.size6 = 687
         self.debug = debug
-        self.deviation = 1.10
+        self.allowance = None
+        self.deviance = None
 
     def _sma(self, series: pd.Series, size: int) -> pd.Series:
         """
@@ -74,6 +76,9 @@ class FabStrategy:
         Passes a dataframe object and adds it as an instance variable.
         """
         self.df = df
+        self.median_candle_height = (self.df['high']/self.df['low']).mean()
+        self.allowance = ((self.median_candle_height)**0.5-1)/5
+        self.deviance = (self.median_candle_height-1)*5+1
         return self.df
 
     def update_moving_averages(self) -> None:
@@ -87,7 +92,9 @@ class FabStrategy:
         self.green, self.orange, self.black = self._sma(self.df["close"], self.size1).values, self._sma(
             self.df["close"], self.size2).values, self._sma(self.df["close"], self.size3).values
 
-        self.blue, self.red = self._sma(self.df['close'],self.size4).values, self._sma(self.df['close'],self.size5).values
+        self.blue = self._sma(self.df['close'], self.size4).values
+        self.light_blue = self._sma(self.df['close'], self.size5).values
+        self.red = self._sma(self.df['close'], self.size6).values
 
     def _update_objects(self, open_price: float, high_price: float, low_price: float, close_price: float) -> None:
         """
@@ -113,7 +120,7 @@ class FabStrategy:
         """
         if self.green[i - 1] > self.blue[i - 1] and self.orange[i - 1] > self.blue[i - 1] and self.green[i - 1] <= \
                 self.orange[i - 1]: # and self.price[i-1]>self.red[i-1]:
-            if self.green[i] > self.orange[i] and self.price[i]/self.orange[i] < (self.deviation):
+            if self.green[i] > self.orange[i] and self.price[i]/self.orange[i] < (self.deviance):
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 1 Buy Enter")
                 return True
@@ -147,7 +154,7 @@ class FabStrategy:
         """
         if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] < self.black[i - 1] and self.green[i - 1] >= \
                 self.orange[i - 1]: # and self.price[i-1]>self.red[i-1]:
-            if self.green[i] < self.orange[i] and self.orange[i]/self.price[i] < (self.deviation):
+            if self.green[i] < self.orange[i] and self.orange[i]/self.price[i] < (self.deviance):
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 1 Short Enter")
                 return True
@@ -170,20 +177,21 @@ class FabStrategy:
                 return True
         return False
 
-    def rule_2_buy_enter(self, i: int, sensitivity: int = 0.001) -> bool:
+    def rule_2_buy_enter(self, i: int) -> bool:
         """
         In Plain English: If Price passes above 231 MA (Black) and then comes back down to touch the 231 MA (Black), BUY.
 
         Parameters
         -----------
         i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
-        sensitivity: how far from the moving average should you enter. The larger the value, the further and less sensitive.
+        allowance: how far from the moving average should you enter. The larger the value, the further and less sensitive.
 
         """
 
         if self.low[i - 1] > self.black[i - 1] and self.low[i - 2] > self.black[i - 2] and self.green[i - 1] >= \
-                self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1] and self.blue[i-1] <= self.black[i-1]:
-            if self.low[i] <= (self.black[i] * (1 + sensitivity)) and (
+                            self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1] and \
+                            self.blue[i-1] <= self.black[i-1]: # and self.black[i-1] > self.red[i-1]:
+            if self.low[i] <= (self.black[i] * (1 + self.allowance)) and (
                     (self.orange[i - 1] - self.orange[i - 4]) / 3) > ((self.black[i - 1] - self.black[i - 4]) / 3):
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 2 Buy Enter")
@@ -211,19 +219,20 @@ class FabStrategy:
             return True
         return False
 
-    def rule_2_short_enter(self, i: int, sensitivity: int = 0.001) -> bool:
+    def rule_2_short_enter(self, i: int) -> bool:
         """
         In Plain English: If Price passes below 231 MA (Black) and then comes back up to touch the 231 MA (Black), SHORT.
 
         Parameters
         -----------
         i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
-        sensitivity: how far from the moving average should you enter. The larger the value, the further and less sensitive.
+        allowance: how far from the moving average should you enter. The larger the value, the further and less sensitive.
 
         """
         if self.high[i - 1] < self.black[i - 1] and self.high[i - 2] < self.black[i - 2] and self.green[i - 1] < \
-                self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1] and self.blue[i-1] > self.black[i-1]:
-            if self.high[i] >= (self.black[i] / (1 + sensitivity)) and (
+                                self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1] and \
+                                self.blue[i-1] > self.black[i-1]: # and self.black[i-1] < self.red[i-1]:
+            if self.high[i] >= (self.black[i] / (1 + self.allowance)) and (
                     (self.orange[i - 1] - self.orange[i - 4]) / 3) < ((self.black[i - 1] - self.black[i - 4]) / 3):
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 2 Short Enter")
@@ -261,7 +270,7 @@ class FabStrategy:
 
         """
         if self.green[i - 1] > self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1]:
-            if self.orange[i] > self.black[i] and self.green[i] > self.orange[i] and self.price[i]/self.orange[i] < (self.deviation):
+            if self.orange[i] > self.black[i] and self.green[i] > self.orange[i] and self.price[i]/self.orange[i] < (self.deviance):
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 3 Buy Enter")
                 return True
@@ -277,7 +286,7 @@ class FabStrategy:
 
         """
         if self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1]:
-            if self.orange[i] < self.black[i] and self.green[i] < self.orange[i] and self.orange[i]/self.price[i] < (self.deviation):
+            if self.orange[i] < self.black[i] and self.green[i] < self.orange[i] and self.orange[i]/self.price[i] < (self.deviance):
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 3 Short Enter")
                 return True
