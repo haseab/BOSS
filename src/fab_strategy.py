@@ -50,7 +50,7 @@ class FabStrategy:
         self.size3 = 231
         self.size4 = 200
         self.size5 = 100
-        self.size6 = 687
+        self.size6 = 279
         self.debug = debug
         self.allowance = None
         self.deviance = None
@@ -95,6 +95,11 @@ class FabStrategy:
         self.blue = self._sma(self.df['close'], self.size4).values
         self.light_blue = self._sma(self.df['close'], self.size5).values
         self.red = self._sma(self.df['close'], self.size6).values
+
+        self.df['green'] = self.green
+        self.df['orange'] = self.orange
+        self.df['black'] = self.black
+        self.df['blue'] = self.blue
 
     def _update_objects(self, open_price: float, high_price: float, low_price: float, close_price: float) -> None:
         """
@@ -190,8 +195,30 @@ class FabStrategy:
 
         if self.low[i - 1] > self.black[i - 1] and self.low[i - 2] > self.black[i - 2] and self.green[i - 1] >= \
                             self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1] and \
-                            self.blue[i-1] <= self.black[i-1]: # and self.black[i-1] > self.red[i-1]:
+                            self.blue[i-1] <= self.black[i-1]:
             if self.low[i] <= (self.black[i] * (1 + self.allowance)) and (
+                    (self.orange[i - 1] - self.orange[i - 4]) / 3) > ((self.black[i - 1] - self.black[i - 4]) / 3):
+                if self.debug == True:
+                    print(str(datetime.now())[:19], self.price[i], "Rule 2 Buy Enter")
+                return True
+        return False
+
+    def rule_2_buy_enter_v2(self, i: int) -> bool:
+        """
+        In Plain English: If Price passes above 231 MA (Black) and then comes back down to touch the 231 MA (Black), BUY.
+
+        Parameters
+        -----------
+        i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
+        allowance: how far from the moving average should you enter. The larger the value, the further and less sensitive.
+
+        """
+
+        if self.low[i - 1] > self.black[i - 1] and self.low[i - 2] > self.black[i - 2] and self.green[i - 1] >= \
+                            self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1] and \
+                            self.blue[i-1] <= self.black[i-1]:
+            if self.low[i] <= (self.black[i] * (1 + self.allowance)) and \
+                self.price[i] < self.red[i] and self.price[i] < self.blue[i] and (
                     (self.orange[i - 1] - self.orange[i - 4]) / 3) > ((self.black[i - 1] - self.black[i - 4]) / 3):
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 2 Buy Enter")
@@ -217,6 +244,27 @@ class FabStrategy:
     def rule_2_buy_stop_absolute(self, i:int) -> bool:
         if self.green[i] < self.black[i]:
             return True
+        return False
+
+    def rule_2_short_enter_v2(self, i: int) -> bool:
+        """
+        In Plain English: If Price passes below 231 MA (Black) and then comes back up to touch the 231 MA (Black), SHORT.
+
+        Parameters
+        -----------
+        i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
+        allowance: how far from the moving average should you enter. The larger the value, the further and less sensitive.
+
+        """
+        if self.high[i - 1] < self.black[i - 1] and self.high[i - 2] < self.black[i - 2] and self.green[i - 1] < \
+                                self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1] and \
+                                self.blue[i-1] > self.black[i-1]:
+            if self.high[i] >= (self.black[i] / (1 + self.allowance)) and \
+                    self.price[i] < self.red[i] and self.price[i] < self.blue[i] and (
+                    (self.orange[i - 1] - self.orange[i - 4]) / 3) < ((self.black[i - 1] - self.black[i - 4]) / 3):
+                if self.debug == True:
+                    print(str(datetime.now())[:19], self.price[i], "Rule 2 Short Enter")
+                return True
         return False
 
     def rule_2_short_enter(self, i: int) -> bool:
@@ -245,7 +293,7 @@ class FabStrategy:
 
         Parameters
         -----------
-        i: the current index in the data. Ex. -1 is the latest point and 0 is the first point in the dataset.
+        i: the current index in the data. Ex. -1 is the lates point and 0 is the first point in the dataset.
 
         """
         if self.orange[i - 1] >= self.black[i - 1] and self.green[i - 1] <= self.black[i - 1]:
