@@ -214,14 +214,11 @@ class FabStrategy:
 
         """
 
-        if self.low[i - 1] > self.black[i - 1] and self.low[i - 2] > self.black[i - 2] and self.green[i - 1] >= \
-                            self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1] and \
-                            self.blue[i-1] <= self.black[i-1]:
-            if self.low[i] <= (self.black[i] * (1 + self.allowance)) and \
-                self.price[i] < self.red[i] and self.price[i] < self.blue[i] and (
-                    (self.orange[i - 1] - self.orange[i - 4]) / 3) > ((self.black[i - 1] - self.black[i - 4]) / 3):
+        if self.low[i - 1] > self.black[i - 1] and self.low[i - 2] > self.black[i - 2] and self.green[i - 1] >= self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1] and self.blue[i-1] <= self.black[i-1]:
+            if self.low[i] <= (self.black[i] * (1 + self.allowance)) and self.price[i-2] > self.red[i-2] and self.price[i] > self.black[i] and self.price[i] > self.blue[i] and self.red[i-1] > self.blue[i-1]  \
+                    and ((self.orange[i - 1] - self.orange[i - 4]) / 3) > ((self.black[i - 1] - self.black[i - 4]) / 3):
                 if self.debug == True:
-                    print(str(datetime.now())[:19], self.price[i], "Rule 2 Buy Enter")
+                    print(str(datetime.now())[:19], self.price[i], "Rule 2 Buy Enter V2")
                 return True
         return False
 
@@ -256,14 +253,11 @@ class FabStrategy:
         allowance: how far from the moving average should you enter. The larger the value, the further and less sensitive.
 
         """
-        if self.high[i - 1] < self.black[i - 1] and self.high[i - 2] < self.black[i - 2] and self.green[i - 1] < \
-                                self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1] and \
-                                self.blue[i-1] > self.black[i-1]:
-            if self.high[i] >= (self.black[i] / (1 + self.allowance)) and \
-                    self.price[i] < self.red[i] and self.price[i] < self.blue[i] and (
-                    (self.orange[i - 1] - self.orange[i - 4]) / 3) < ((self.black[i - 1] - self.black[i - 4]) / 3):
+        if self.high[i - 1] < self.black[i - 1] and self.high[i - 2] < self.black[i - 2] and self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1] and self.blue[i-1] > self.black[i-1]:
+            if self.high[i] >= (self.black[i] / (1 + self.allowance)) and self.price[i-2] < self.red[i-2] and self.price[i] < self.black[i] and self.price[i] < self.blue[i] and self.red[i-2] < self.blue[i-2] and \
+                    ((self.orange[i - 1] - self.orange[i - 4]) / 3) < ((self.black[i - 1] - self.black[i - 4]) / 3):
                 if self.debug == True:
-                    print(str(datetime.now())[:19], self.price[i], "Rule 2 Short Enter")
+                    print(str(datetime.now())[:19], self.price[i], "Rule 2 Short Enter V2")
                 return True
         return False
 
