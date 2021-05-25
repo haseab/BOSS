@@ -76,8 +76,8 @@ class FabStrategy:
         Passes a dataframe object and adds it as an instance variable.
         """
         self.df = df
-        self.median_candle_height = (self.df['high']/self.df['low']).mean()
-        self.allowance = ((self.median_candle_height)**0.5-1)/5
+        self.median_candle_height = (self.df['high']/self.df['low']).median()
+        self.allowance = ((self.median_candle_height)**0.5-1)/15
         self.deviance = (self.median_candle_height-1)*5+1
         return self.df
 
