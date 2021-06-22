@@ -1,5 +1,6 @@
 from datetime import datetime
 import pandas as pd
+from helper import Helper as h
 import numpy as np
 
 
@@ -100,6 +101,8 @@ class FabStrategy:
         self.df['orange'] = self.orange
         self.df['black'] = self.black
         self.df['blue'] = self.blue
+        self.df['light blue'] = self.light_blue
+        self.df['red'] = self.red
 
     def _update_objects(self, open_price: float, high_price: float, low_price: float, close_price: float) -> None:
         """
@@ -194,10 +197,8 @@ class FabStrategy:
         """
 
         if self.low[i - 1] > self.black[i - 1] and self.low[i - 2] > self.black[i - 2] and self.green[i - 1] >= \
-                            self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1] and \
-                            self.blue[i-1] <= self.black[i-1]:
-            if self.low[i] <= (self.black[i] * (1 + self.allowance)) and (
-                    (self.orange[i - 1] - self.orange[i - 4]) / 3) > ((self.black[i - 1] - self.black[i - 4]) / 3):
+                            self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1]: # and self.blue[i-1] <= self.black[i-1]:
+            if self.low[i] <= (self.black[i] * (1 + self.allowance)) and h.slope(self.orange, i) > h.slope(self.black, i):
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 2 Buy Enter")
                 return True
@@ -216,7 +217,7 @@ class FabStrategy:
 
         if self.low[i - 1] > self.black[i - 1] and self.low[i - 2] > self.black[i - 2] and self.green[i - 1] >= self.black[i - 1] and self.orange[i - 1] <= self.black[i - 1] and self.blue[i-1] <= self.black[i-1]:
             if self.low[i] <= (self.black[i] * (1 + self.allowance)) and self.price[i-2] > self.red[i-2] and self.price[i] > self.black[i] and self.price[i] > self.blue[i] and self.red[i-1] > self.blue[i-1]  \
-                    and ((self.orange[i - 1] - self.orange[i - 4]) / 3) > ((self.black[i - 1] - self.black[i - 4]) / 3):
+                    and h.slope(self.orange, i) > h.slope(self.black, i):
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 2 Buy Enter V2")
                 return True
@@ -254,8 +255,8 @@ class FabStrategy:
 
         """
         if self.high[i - 1] < self.black[i - 1] and self.high[i - 2] < self.black[i - 2] and self.green[i - 1] < self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1] and self.blue[i-1] > self.black[i-1]:
-            if self.high[i] >= (self.black[i] / (1 + self.allowance)) and self.price[i-2] < self.red[i-2] and self.price[i] < self.black[i] and self.price[i] < self.blue[i] and self.red[i-2] < self.blue[i-2] and \
-                    ((self.orange[i - 1] - self.orange[i - 4]) / 3) < ((self.black[i - 1] - self.black[i - 4]) / 3):
+            if self.high[i] >= (self.black[i] / (1 + self.allowance)) and self.price[i-2] < self.red[i-2] and self.price[i] < self.black[i] and self.price[i] < self.blue[i] and self.red[i-2] < self.blue[i-2] \
+                    and h.slope(self.orange, i) < h.slope(self.black, i):
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 2 Short Enter V2")
                 return True
@@ -272,10 +273,8 @@ class FabStrategy:
 
         """
         if self.high[i - 1] < self.black[i - 1] and self.high[i - 2] < self.black[i - 2] and self.green[i - 1] < \
-                                self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1] and \
-                                self.blue[i-1] > self.black[i-1]: # and self.black[i-1] < self.red[i-1]:
-            if self.high[i] >= (self.black[i] / (1 + self.allowance)) and (
-                    (self.orange[i - 1] - self.orange[i - 4]) / 3) < ((self.black[i - 1] - self.black[i - 4]) / 3):
+                                self.black[i - 1] and self.orange[i - 1] >= self.black[i - 1]:# and self.blue[i-1] > self.black[i-1]: # and self.black[i-1] < self.red[i-1]:
+            if self.high[i] >= (self.black[i] / (1 + self.allowance)) and h.slope(self.orange, i) < h.slope(self.black, i):
                 if self.debug == True:
                     print(str(datetime.now())[:19], self.price[i], "Rule 2 Short Enter")
                 return True
